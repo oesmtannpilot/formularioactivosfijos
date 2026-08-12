@@ -1,0 +1,848 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<title>Alta de Activo Fijo — Texelrio (Anexo I)</title>
+<style>
+  :root{
+    --navy:#0d3b66;
+    --navy-dark:#092a4a;
+    --cyan:#22b2e0;
+    --bg:#f2f5f8;
+    --panel:#ffffff;
+    --border:#d7dee5;
+    --text:#1c2733;
+    --muted:#5c6b7a;
+    --danger:#c0392b;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Segoe UI",Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+  }
+  .app{
+    max-width:1180px;
+    margin:0 auto;
+    padding:24px 20px 60px;
+  }
+  .app-header{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    margin-bottom:20px;
+  }
+  .app-header img{height:48px;}
+  .app-header h1{
+    font-size:20px;
+    margin:0;
+    color:var(--navy-dark);
+  }
+  .app-header p{
+    margin:2px 0 0;
+    font-size:13px;
+    color:var(--muted);
+  }
+  .layout{
+    display:grid;
+    grid-template-columns:minmax(360px,1fr) minmax(420px,1.1fr);
+    gap:20px;
+    align-items:start;
+  }
+  @media (max-width:920px){
+    .layout{grid-template-columns:1fr;}
+  }
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:20px 22px;
+  }
+  .panel h2{
+    font-size:15px;
+    color:var(--navy-dark);
+    margin:0 0 14px;
+    padding-bottom:8px;
+    border-bottom:2px solid var(--navy);
+  }
+  .field{margin-bottom:14px;}
+  .field label{
+    display:block;
+    font-size:13px;
+    font-weight:600;
+    margin-bottom:4px;
+    color:var(--navy-dark);
+  }
+  .field .hint{
+    display:block;
+    font-weight:400;
+    font-size:11.5px;
+    color:var(--muted);
+    margin-top:2px;
+  }
+  .field input[type=text],
+  .field input[type=number],
+  .field input[type=date],
+  .field select,
+  .field textarea{
+    width:100%;
+    padding:8px 10px;
+    border:1px solid var(--border);
+    border-radius:6px;
+    font-size:14px;
+    font-family:inherit;
+    color:var(--text);
+    background:#fff;
+  }
+  .field textarea{resize:vertical;min-height:56px;}
+  .moneda-row{display:flex;gap:8px;}
+  .moneda-row select{flex:0 0 112px;}
+  .moneda-row input{flex:1;}
+  .field.invalid input,
+  .field.invalid select,
+  .field.invalid textarea{
+    border-color:var(--danger);
+    background:#fdf2f1;
+  }
+  .radio-row{display:flex;gap:16px;}
+  .radio-row label{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-weight:500;
+    font-size:14px;
+    color:var(--text);
+  }
+  .radio-row input{margin:0;}
+  .vida-util-note{
+    font-size:12.5px;
+    color:var(--navy);
+    background:#eaf6fb;
+    border:1px solid #cdeaf5;
+    border-radius:6px;
+    padding:6px 10px;
+    margin-top:6px;
+    display:none;
+  }
+  .vida-util-note.show{display:block;}
+  .auth-note{
+    font-size:12.5px;
+    color:#8a5a00;
+    background:#fff6e5;
+    border:1px solid #f2d492;
+    border-radius:6px;
+    padding:6px 10px;
+    margin-top:6px;
+    display:none;
+    font-weight:600;
+  }
+  .auth-note.show{display:block;}
+  fieldset{border:none;padding:0;margin:0 0 18px;}
+  fieldset legend{
+    font-size:13px;
+    font-weight:700;
+    color:var(--navy-dark);
+    padding:0;
+    margin-bottom:10px;
+  }
+  .actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:18px;
+  }
+  button{
+    font-family:inherit;
+    font-size:13.5px;
+    font-weight:600;
+    padding:10px 16px;
+    border-radius:7px;
+    border:1px solid transparent;
+    cursor:pointer;
+  }
+  .btn-primary{background:var(--navy);color:#fff;}
+  .btn-primary:hover{background:var(--navy-dark);}
+  .btn-secondary{background:#fff;border-color:var(--navy);color:var(--navy);}
+  .btn-secondary:hover{background:#eaf1f7;}
+  .btn-secondary:disabled{opacity:.45;cursor:not-allowed;}
+  .status-msg{
+    font-size:12.5px;
+    margin-top:10px;
+    min-height:16px;
+  }
+  .status-msg.error{color:var(--danger);}
+  .status-msg.ok{color:#1a7a3c;}
+
+  /* ---- Vista previa tipo documento ---- */
+  .preview-wrap{
+    background:#e9edf1;
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:18px;
+    overflow:auto;
+  }
+  #documento{
+    background:#fff;
+    width:100%;
+    max-width:720px;
+    margin:0 auto;
+    padding:30px 34px 26px;
+    font-family:"Segoe UI",Arial,sans-serif;
+    font-size:14px;
+    color:#111;
+    box-shadow:0 1px 4px rgba(0,0,0,.15);
+  }
+  table.doc2-header{width:100%;border-collapse:collapse;}
+  table.doc2-header td{border:none;padding:0;vertical-align:top;}
+  .doc2-logo{font-size:27px;font-weight:800;color:var(--navy-dark);letter-spacing:.3px;width:50%;}
+  .doc2-logo .e{color:var(--cyan);}
+  .doc2-meta{text-align:right;font-size:11px;color:#555;line-height:1.6;width:50%;}
+  .doc2-meta .l1{font-size:12.5px;color:#333;}
+  .doc2-rule{border:none;border-top:3px solid var(--navy-dark);margin:12px 0 20px;height:0;}
+  .doc2-title{
+    text-align:center;
+    font-size:19px;
+    font-weight:800;
+    letter-spacing:.3px;
+    color:#111;
+    margin:0 0 4px;
+    text-transform:uppercase;
+  }
+  .doc2-subtitle{text-align:center;font-size:12px;color:#666;margin:0 0 22px;}
+  table.doc2-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:30px;}
+  table.doc2-table td{border:1px solid #d7dee5;padding:9px 12px;vertical-align:top;}
+  table.doc2-table td.label{
+    background:#eef2f6;
+    font-weight:700;
+    color:#334;
+    width:38%;
+    letter-spacing:.2px;
+    font-size:11px;
+    text-transform:uppercase;
+  }
+  table.doc2-table td.value{color:#111;}
+  table.doc2-table td.value.vacio{color:#999;}
+  table.doc2-firmas{width:100%;border-collapse:collapse;margin-top:38px;}
+  table.doc2-firmas td{
+    width:33.33%;
+    text-align:center;
+    padding-top:6px;
+    font-size:11.5px;
+    color:#333;
+    border-top:1px solid #333;
+  }
+
+  @media print{
+    body *{visibility:hidden;}
+    #documento, #documento *{visibility:visible;}
+    #documento{
+      position:absolute;
+      left:0;top:0;
+      box-shadow:none;
+      max-width:none;
+      width:100%;
+      padding:0 8mm;
+    }
+    @page{size:A4;margin:14mm 10mm;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="app-header">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAesAAADKCAYAAACFdGiGAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAlwSFlzAAAh1QAAIdUBBJy0nQAAQJVJREFUeF7tXQd4XMXVdcVAIPQQSn5IgISEkIQUwGAbFzqmmt67wVT33nvHvVfcO+69N9zl3nuTJdmyumSZ+9+zZkGWVvve23dn92l15/v2S7DmzZs5c9+cmTu3FCUuRbQoAoqAIqAIKAKKgHcRAFlrUQQUAUVAEVAEFAHvIlDEu13TnikCioAioAgoAoqATwOuMCgCioAioAgoAoqAtxFQsvb2/GjvFAFFQBFQBBQBPVmrDCgCioAioAgoAl5HQE/WXp8h7Z8ioAgoAopAoUdAybrQi4ACoAgoAoqAIuB1BJSsvT5D2j9FQBFQBBSBQo+AknWhFwEFQBFQBBQBRcDrCChZe32GtH+KgCKgCCgChR4BJetCLwIKgCKgCCgCioDXEVCy9voMaf8UAUVAEVAECj0CStaFXgQUAEVAEVAEFAGvI6Bk7fUZ0v4pAoqAIqAIFHoElKwLvQgoAIqAIqAIKAJeR0DJ2usztP1TBBQBRUARKPQIKFkXehFQABQBRUARUAS8joCStddnSPunCCgCioAiUOgRULIu9CKgACgCioAioAh4HQEla6/PkPZPEVAEFAFFoNAjoGRd6EVAAVAEFAFFQBHwOgJK1l6fIe2fIqAIKAKKQKFHQMm60IuAAqAIKAKKgCLgdQSUrL0+Q9o/RUARUAQUgUKPgJJ1oRcBBUARUAQUAUXA6wgoWXt9hrR/ioAioAgoAoUeASXrQi8CCoAioAgoAoqA1xFQsvb6DGn/FAFFQBFQBAo9AkrWhV4EFABFQBFQBBQBryOgZO31GdL+KQKKgCKgCBR6BJSsC70IKACKgCKgCCgCXkfg/wF1WOh7/nfWNwAAAABJRU5ErkJggg==" alt="Texelrio">
+    <div>
+      <h1>Alta / Mejora / Baja de Activo Fijo</h1>
+      <p id="app-subtitle">Anexo I — Alta · Anexo II — Mejora · Anexo III — Baja</p>
+    </div>
+  </div>
+
+  <div class="layout">
+
+    <!-- ============ FORMULARIO ============ -->
+    <div class="panel">
+      <h2>Datos de la solicitud</h2>
+      <form id="form-af" novalidate>
+
+        <fieldset>
+          <legend>Tipo de operación *</legend>
+          <div class="radio-row">
+            <label><input type="radio" name="tipo" value="ALTA" checked> Alta</label>
+            <label><input type="radio" name="tipo" value="MEJORA"> Mejora</label>
+            <label><input type="radio" name="tipo" value="BAJA"> Baja</label>
+          </div>
+        </fieldset>
+
+        <div class="field" id="f-grupo" data-ops="ALTA MEJORA BAJA">
+          <label for="grupo">Grupo de Activo Fijo <span class="req-am">*</span></label>
+          <select id="grupo" required>
+            <option value="" disabled selected>Seleccioná un grupo…</option>
+            <option value="Mejoras sobre inmuebles de terceros" data-vidautil="600">Mejoras sobre inmuebles de terceros</option>
+            <option value="Maquinarias" data-vidautil="120">Maquinarias</option>
+            <option value="Instalaciones" data-vidautil="120">Instalaciones</option>
+            <option value="Rodados" data-vidautil="60">Rodados</option>
+            <option value="Rodados Leasing" data-vidautil="60">Rodados Leasing</option>
+            <option value="Equipo Electrónico" data-vidautil="36">Equipo Electrónico</option>
+            <option value="Herramientas" data-vidautil="36">Herramientas</option>
+            <option value="Muebles y Útiles" data-vidautil="36">Muebles y Útiles</option>
+          </select>
+          <div class="vida-util-note" id="nota-vida-util"></div>
+        </div>
+
+        <div class="field" id="f-descripcion" data-ops="ALTA MEJORA BAJA">
+          <label for="descripcion">Descripción del Activo *</label>
+          <textarea id="descripcion" required placeholder="Ej.: Zorra de carga de hasta 3 Tns."></textarea>
+        </div>
+
+        <!-- ===== Campos exclusivos de BAJA (Anexo III) ===== -->
+        <div class="field" id="f-numaf-baja" data-ops="BAJA">
+          <label for="numaf-baja">N° de Activo Fijo a dar de baja *</label>
+          <input type="text" id="numaf-baja" placeholder="Ej.: AF-000123">
+        </div>
+
+        <div class="field" id="f-motivo-baja" data-ops="BAJA">
+          <label for="motivo-baja">Motivo de la baja *</label>
+          <input type="text" id="motivo-baja" list="lista-motivo-baja" placeholder="Ej.: Rotura / Obsolescencia / Venta">
+          <datalist id="lista-motivo-baja">
+            <option value="Rotura">
+            <option value="Falla grave">
+            <option value="Obsolescencia">
+            <option value="Destrucción total">
+            <option value="Fuera de servicio">
+            <option value="Venta">
+          </datalist>
+        </div>
+
+        <div class="field" id="f-fecha-baja" data-ops="BAJA">
+          <label for="fecha-baja">Fecha real de la baja *</label>
+          <input type="date" id="fecha-baja">
+        </div>
+
+        <div class="field" id="f-reventa" data-ops="BAJA">
+          <label for="reventa">Posibilidad de reventa *</label>
+          <select id="reventa">
+            <option value="" disabled selected>Seleccioná una opción…</option>
+            <option value="Sí, en condiciones de reventa">Sí, en condiciones de reventa</option>
+            <option value="Sí, con reparación previa">Sí, con reparación previa</option>
+            <option value="No, sin valor de mercado">No, sin valor de mercado</option>
+            <option value="Ya vendido">Ya vendido</option>
+          </select>
+        </div>
+        <!-- ===== Fin campos BAJA ===== -->
+
+        <div class="field" id="f-valor" data-ops="ALTA MEJORA">
+          <label for="valor">Valor estimado *</label>
+          <div class="moneda-row">
+            <select id="moneda">
+              <option value="ARS" selected>ARS ($)</option>
+              <option value="USD">USD (US$)</option>
+            </select>
+            <input type="number" id="valor" min="0" step="0.01" required placeholder="Ej.: 800000">
+          </div>
+          <div class="auth-note" id="nota-autorizacion"></div>
+        </div>
+
+        <div class="field" id="f-grado" data-ops="ALTA MEJORA">
+          <label for="grado">Grado de necesidad *</label>
+          <input type="text" id="grado" list="lista-grado" required placeholder="Ej.: Urgente">
+          <datalist id="lista-grado">
+            <option value="Urgente">
+            <option value="Alta">
+            <option value="Media">
+            <option value="Baja">
+          </datalist>
+        </div>
+
+        <div class="field" id="f-motivo" data-ops="ALTA MEJORA">
+          <label for="motivo">Motivo de la compra *</label>
+          <input type="text" id="motivo" list="lista-motivo" required placeholder="Ej.: Mejora de servicio">
+          <datalist id="lista-motivo">
+            <option value="Reemplazo por rotura">
+            <option value="Mejora de servicio">
+            <option value="Ampliación de flota / capacidad">
+            <option value="Nueva necesidad operativa">
+            <option value="Obsolescencia del bien actual">
+          </datalist>
+        </div>
+
+        <div class="field" id="f-ceco" data-ops="ALTA MEJORA">
+          <label for="ceco">CeCo *</label>
+          <input type="text" id="ceco" required placeholder="Ej.: EZE2700">
+        </div>
+
+        <div class="field" id="f-fecha-puesta" data-ops="ALTA MEJORA">
+          <label for="fecha-puesta">Fecha estimada de puesta en servicio *</label>
+          <input type="date" id="fecha-puesta" required>
+        </div>
+
+        <div class="field" id="f-responsable" data-ops="ALTA MEJORA">
+          <label for="responsable">Responsable de comunicar la fecha real de puesta en servicio *</label>
+          <input type="text" id="responsable" required placeholder="Nombre y apellido">
+        </div>
+
+        <div class="field" id="f-cobertura" data-ops="ALTA MEJORA">
+          <label for="cobertura">Cobertura de riesgo
+            <span class="hint">Dejar en blanco si no corresponde (se completa como "No aplica").</span>
+          </label>
+          <input type="text" id="cobertura" placeholder="Ej.: Póliza flota Texelrio / No aplica">
+        </div>
+
+        <div class="field" id="f-observaciones" data-ops="ALTA MEJORA BAJA">
+          <label for="observaciones">Observaciones
+            <span class="hint">Opcional — cualquier información adicional relevante.</span>
+          </label>
+          <textarea id="observaciones" placeholder="Ej.: Se solicita reemplazo urgente por rotura del equipo anterior."></textarea>
+        </div>
+
+        <fieldset>
+          <legend>Datos adicionales (trazabilidad interna)</legend>
+
+          <div class="field" id="f-solicitante" data-ops="ALTA MEJORA BAJA">
+            <label for="solicitante">Solicitante (quien completa el formulario) *</label>
+            <input type="text" id="solicitante" required placeholder="Nombre y apellido">
+          </div>
+
+          <div class="field" id="f-fecha-solicitud" data-ops="ALTA MEJORA BAJA">
+            <label for="fecha-solicitud">Fecha de solicitud</label>
+            <input type="date" id="fecha-solicitud">
+          </div>
+
+          <div class="field" id="f-numsp" data-ops="ALTA MEJORA">
+            <label for="numsp">N° de Solicitud de Compra (SP)
+              <span class="hint">Para la correcta imputación contable.</span>
+            </label>
+            <input type="text" id="numsp" placeholder="Ej.: SP-2026-000123">
+          </div>
+
+          <div class="field" id="f-numaf" data-ops="ALTA MEJORA">
+            <label for="numaf">N° de Activo Fijo
+              <span class="hint">Lo asigna Contabilidad al recibir el formulario — completar cuando se informe.</span>
+            </label>
+            <input type="text" id="numaf" placeholder="A completar por Contabilidad">
+          </div>
+
+        </fieldset>
+
+        <div class="actions">
+          <button type="button" class="btn-primary" id="btn-generar">Generar documento</button>
+          <button type="button" class="btn-secondary" id="btn-word" disabled>Descargar Word (.doc)</button>
+          <button type="button" class="btn-secondary" id="btn-pdf" disabled>Descargar PDF (imprimir)</button>
+          <button type="button" class="btn-secondary" id="btn-mail" disabled>Enviar por correo a Contabilidad</button>
+        </div>
+        <div class="status-msg" id="status-msg"></div>
+      </form>
+    </div>
+
+    <!-- ============ VISTA PREVIA ============ -->
+    <div>
+      <div class="preview-wrap">
+        <div id="documento">
+          <table class="doc2-header">
+            <tr>
+              <td class="doc2-logo">Tex<span class="e">e</span>lrio</td>
+              <td class="doc2-meta">
+                <div id="doc-meta-anexo" class="l1">Anexo I — Formulario de Alta</div>
+              </td>
+            </tr>
+          </table>
+          <hr class="doc2-rule">
+
+          <p class="doc2-title" id="doc-titulo-principal">Solicitud de Alta de Activo Fijo</p>
+          <p class="doc2-subtitle">Administración y Operaciones · Procedimiento Activo Fijo</p>
+
+          <table class="doc2-table">
+            <tr data-ops="ALTA MEJORA BAJA"><td class="label">Tipo de solicitud</td><td class="value vacio" id="doc-tipo">—</td></tr>
+            <tr data-ops="ALTA MEJORA BAJA"><td class="label">Número de AF</td><td class="value vacio" id="doc-numaf">—</td></tr>
+            <tr data-ops="ALTA MEJORA BAJA"><td class="label">Grupo de Activo Fijo</td><td class="value vacio" id="doc-grupo">—</td></tr>
+            <tr data-ops="ALTA MEJORA BAJA"><td class="label">Descripción del bien</td><td class="value vacio" id="doc-descripcion">—</td></tr>
+            <tr data-ops="ALTA MEJORA"><td class="label">Valor estimado</td><td class="value vacio" id="doc-valor">—</td></tr>
+            <tr data-ops="ALTA MEJORA"><td class="label">Autorización</td><td class="value vacio" id="doc-autorizacion">—</td></tr>
+            <tr data-ops="ALTA MEJORA"><td class="label">Grado de necesidad</td><td class="value vacio" id="doc-grado">—</td></tr>
+            <tr data-ops="ALTA MEJORA"><td class="label">Motivo de la compra</td><td class="value vacio" id="doc-motivo">—</td></tr>
+            <tr data-ops="ALTA MEJORA"><td class="label">CeCo</td><td class="value vacio" id="doc-ceco">—</td></tr>
+            <tr data-ops="ALTA MEJORA"><td class="label">Fecha estimada de puesta en servicio</td><td class="value vacio" id="doc-fecha-puesta">—</td></tr>
+            <tr data-ops="ALTA MEJORA"><td class="label">Responsable de comunicar puesta en servicio</td><td class="value vacio" id="doc-responsable">—</td></tr>
+            <tr data-ops="ALTA MEJORA"><td class="label">Cobertura de riesgo</td><td class="value vacio" id="doc-cobertura">—</td></tr>
+            <tr data-ops="BAJA"><td class="label">Motivo de la baja</td><td class="value vacio" id="doc-motivo-baja">—</td></tr>
+            <tr data-ops="BAJA"><td class="label">Fecha real de la baja</td><td class="value vacio" id="doc-fecha-baja">—</td></tr>
+            <tr data-ops="BAJA"><td class="label">Posibilidad de reventa</td><td class="value vacio" id="doc-reventa">—</td></tr>
+            <tr data-ops="ALTA MEJORA BAJA"><td class="label">Observaciones</td><td class="value vacio" id="doc-observaciones">—</td></tr>
+            <tr data-ops="ALTA MEJORA"><td class="label">Vida útil estimada (manual 4.4)</td><td class="value vacio" id="doc-vida-util">—</td></tr>
+            <tr data-ops="ALTA MEJORA BAJA"><td class="label" id="doc-label-solicitante">Creador de la SP</td><td class="value vacio" id="doc-solicitante">—</td></tr>
+            <tr data-ops="ALTA MEJORA"><td class="label">N° de SP</td><td class="value vacio" id="doc-numsp">—</td></tr>
+            <tr data-ops="ALTA MEJORA BAJA"><td class="label">Fecha de solicitud</td><td class="value vacio" id="doc-fecha-solicitud">—</td></tr>
+          </table>
+
+          <table class="doc2-firmas">
+            <tr>
+              <td id="doc-firma-1">Creador de la SP</td>
+              <td>Jefe de Operaciones</td>
+              <td>Contabilidad</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  const $ = (id) => document.getElementById(id);
+
+  // Textos del documento según el tipo de operación
+  const TITULOS = {
+    ALTA:   'Solicitud de Alta de Activo Fijo',
+    MEJORA: 'Solicitud de Mejora de Activo Fijo',
+    BAJA:   'Informe de Baja de Activo Fijo'
+  };
+  const ETIQUETA_TIPO = { ALTA:'Alta', MEJORA:'Mejora', BAJA:'Baja' };
+  const META_ANEXO = {
+    ALTA:   'Anexo I — Formulario de Alta',
+    MEJORA: 'Anexo II — Formulario de Mejora',
+    BAJA:   'Anexo III — Informe de Baja'
+  };
+
+  // Monto a partir del cual la compra requiere autorización (según moneda)
+  const UMBRAL_AUTORIZACION = { USD: 500, ARS: 1000000 };
+
+  function requiereAutorizacion(){
+    const moneda = $('moneda').value;
+    const valor = parseFloat($('valor').value);
+    const umbral = UMBRAL_AUTORIZACION[moneda];
+    if (isNaN(valor) || umbral == null) return false;
+    return valor > umbral;
+  }
+
+  function umbralTexto(){
+    return $('moneda').value === 'USD' ? 'US$ 500' : '$ 1.000.000';
+  }
+
+  // Actualiza título, anexo y firmas del documento en base a la operación actual
+  function actualizarEncabezadoDoc(){
+    const op = tipoOperacion();
+    const esBaja = op === 'BAJA';
+    $('doc-titulo-principal').textContent = TITULOS[op];
+    $('doc-meta-anexo').textContent = META_ANEXO[op];
+    $('doc-firma-1').textContent = esBaja ? 'Responsable de la baja' : 'Creador de la SP';
+    $('doc-label-solicitante').textContent = esBaja ? 'Solicitante / Responsable' : 'Creador de la SP';
+  }
+
+  // Campos obligatorios según el tipo de operación
+  const REQUIRED_BY_OP = {
+    ALTA: [
+      { id:'grupo',        wrap:'f-grupo' },
+      { id:'descripcion',  wrap:'f-descripcion' },
+      { id:'valor',        wrap:'f-valor' },
+      { id:'grado',        wrap:'f-grado' },
+      { id:'motivo',       wrap:'f-motivo' },
+      { id:'ceco',         wrap:'f-ceco' },
+      { id:'fecha-puesta', wrap:'f-fecha-puesta' },
+      { id:'responsable',  wrap:'f-responsable' },
+      { id:'solicitante',  wrap:'f-solicitante' }
+    ],
+    BAJA: [
+      { id:'numaf-baja',   wrap:'f-numaf-baja' },
+      { id:'descripcion',  wrap:'f-descripcion' },
+      { id:'motivo-baja',  wrap:'f-motivo-baja' },
+      { id:'fecha-baja',   wrap:'f-fecha-baja' },
+      { id:'reventa',      wrap:'f-reventa' },
+      { id:'solicitante',  wrap:'f-solicitante' }
+    ]
+  };
+  REQUIRED_BY_OP.MEJORA = REQUIRED_BY_OP.ALTA;
+
+  function camposRequeridos(){
+    return REQUIRED_BY_OP[tipoOperacion()] || REQUIRED_BY_OP.ALTA;
+  }
+
+  // Muestra/oculta cada elemento con data-ops según la operación elegida
+  function aplicarVisibilidad(){
+    const op = tipoOperacion();
+    document.querySelectorAll('[data-ops]').forEach(el => {
+      const ops = el.getAttribute('data-ops').split(/\s+/);
+      el.style.display = ops.includes(op) ? '' : 'none';
+    });
+    // El asterisco de "Grupo" solo aplica a Alta/Mejora
+    document.querySelectorAll('.req-am').forEach(el => {
+      el.style.display = (op === 'BAJA') ? 'none' : '';
+    });
+    // La nota de vida útil no aplica a Baja
+    if (op === 'BAJA'){
+      $('nota-vida-util').classList.remove('show');
+    }
+    // El título de la solicitud y el anexo cambian al instante
+    actualizarEncabezadoDoc();
+    actualizarNotaAutorizacion();
+  }
+
+  // Muestra el aviso de autorización cuando el valor supera el umbral
+  function actualizarNotaAutorizacion(){
+    const nota = $('nota-autorizacion');
+    if (!nota) return;
+    if (tipoOperacion() !== 'BAJA' && requiereAutorizacion()){
+      nota.textContent = '⚠ Supera ' + umbralTexto() + ': requiere autorización previa antes de la compra.';
+      nota.classList.add('show');
+    } else {
+      nota.classList.remove('show');
+    }
+  }
+
+  const MAIL_TO = ['fernando.medina@ca1492.com','german.sofarelli@ca1492.com'];
+
+  function currencyFmt(n, moneda){
+    if (n === '' || n === null || isNaN(n)) return '';
+    const symbol = moneda === 'USD' ? 'US$' : '$';
+    return symbol + ' ' + Number(n).toLocaleString('es-AR', {minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+
+  function dateFmt(iso){
+    if (!iso) return '';
+    const [y,m,d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+  }
+
+  function tipoOperacion(){
+    return document.querySelector('input[name="tipo"]:checked').value;
+  }
+
+  function validar(){
+    let ok = true;
+    // Limpia marcas previas de todos los campos posibles
+    Object.values(REQUIRED_BY_OP).forEach(list => list.forEach(f => {
+      const w = $(f.wrap);
+      if (w) w.classList.remove('invalid');
+    }));
+    camposRequeridos().forEach(f=>{
+      const el = $(f.id);
+      const wrap = $(f.wrap);
+      const val = (el.value || '').trim();
+      if (!val){
+        ok = false;
+        wrap.classList.add('invalid');
+      } else {
+        wrap.classList.remove('invalid');
+      }
+    });
+    return ok;
+  }
+
+  function vidaUtilTexto(){
+    const sel = $('grupo');
+    const opt = sel.options[sel.selectedIndex];
+    const meses = opt ? opt.getAttribute('data-vidautil') : null;
+    if (!meses) return null;
+    const anios = (Number(meses)/12);
+    const aniosTxt = Number.isInteger(anios) ? anios : anios.toFixed(1);
+    return `${meses} meses (${aniosTxt} años)`;
+  }
+
+  $('grupo').addEventListener('change', () => {
+    const nota = $('nota-vida-util');
+    if (tipoOperacion() === 'BAJA'){ nota.classList.remove('show'); return; }
+    const texto = vidaUtilTexto();
+    if (texto){
+      nota.textContent = 'Vida útil según manual (punto 4.4): ' + texto;
+      nota.classList.add('show');
+    } else {
+      nota.classList.remove('show');
+    }
+  });
+
+  // Aviso de autorización en vivo al cambiar valor o moneda
+  $('valor').addEventListener('input', actualizarNotaAutorizacion);
+  $('moneda').addEventListener('change', actualizarNotaAutorizacion);
+
+  // Cambio de tipo de operación: reconfigura el formulario
+  document.querySelectorAll('input[name="tipo"]').forEach(r => {
+    r.addEventListener('change', () => {
+      aplicarVisibilidad();
+      // Al cambiar de operación se limpian marcas de error y el estado
+      document.querySelectorAll('.field.invalid').forEach(el => el.classList.remove('invalid'));
+      setStatus('');
+      $('btn-word').disabled = true;
+      $('btn-pdf').disabled = true;
+      $('btn-mail').disabled = true;
+    });
+  });
+
+  // Estado inicial de visibilidad
+  aplicarVisibilidad();
+
+  function setCampo(id, value){
+    const el = $(id);
+    if (value){
+      el.textContent = value;
+      el.classList.remove('vacio');
+    } else {
+      el.textContent = '—';
+      el.classList.add('vacio');
+    }
+  }
+
+  function renderDocumento(){
+    aplicarVisibilidad();
+    const tipo = tipoOperacion();
+    const esBaja = tipo === 'BAJA';
+
+    setCampo('doc-tipo', ETIQUETA_TIPO[tipo]);
+    setCampo('doc-grupo', $('grupo').value);
+    setCampo('doc-descripcion', $('descripcion').value.trim());
+    setCampo('doc-observaciones', $('observaciones').value.trim());
+    setCampo('doc-solicitante', $('solicitante').value.trim());
+    setCampo('doc-fecha-solicitud', dateFmt($('fecha-solicitud').value));
+
+    if (esBaja){
+      setCampo('doc-numaf', $('numaf-baja').value.trim());
+      setCampo('doc-motivo-baja', $('motivo-baja').value.trim());
+      setCampo('doc-fecha-baja', dateFmt($('fecha-baja').value));
+      setCampo('doc-reventa', $('reventa').value);
+    } else {
+      setCampo('doc-valor', currencyFmt($('valor').value, $('moneda').value));
+      setCampo('doc-autorizacion', requiereAutorizacion()
+        ? 'Requiere autorización previa (supera ' + umbralTexto() + ')'
+        : 'No requiere autorización previa');
+      setCampo('doc-grado', $('grado').value.trim());
+      setCampo('doc-motivo', $('motivo').value.trim());
+      setCampo('doc-ceco', $('ceco').value.trim());
+      setCampo('doc-fecha-puesta', dateFmt($('fecha-puesta').value));
+      setCampo('doc-responsable', $('responsable').value.trim());
+      setCampo('doc-cobertura', $('cobertura').value.trim() || 'No aplica');
+      setCampo('doc-vida-util', vidaUtilTexto());
+      setCampo('doc-numsp', $('numsp').value.trim());
+      setCampo('doc-numaf', $('numaf').value.trim() || 'Pendiente de asignación');
+    }
+  }
+
+  function nombreArchivo(ext){
+    const desc = ($('descripcion').value.trim() || 'Activo Fijo')
+      .toUpperCase()
+      .replace(/[\\/:*?"<>|]+/g,' ')
+      .replace(/\s+/g,' ')
+      .trim();
+    const tipo = tipoOperacion();
+    return `${tipo} AF - ${desc}.${ext}`;
+  }
+
+  function setStatus(msg, type){
+    const el = $('status-msg');
+    el.textContent = msg || '';
+    el.className = 'status-msg' + (type ? ' ' + type : '');
+  }
+
+  $('btn-generar').addEventListener('click', () => {
+    if (!validar()){
+      setStatus('Completá los campos obligatorios (*) antes de generar el documento.', 'error');
+      $('btn-word').disabled = true;
+      $('btn-pdf').disabled = true;
+      $('btn-mail').disabled = true;
+      return;
+    }
+    if (!$('fecha-solicitud').value){
+      $('fecha-solicitud').value = new Date().toISOString().slice(0,10);
+    }
+    renderDocumento();
+    setStatus('Documento generado. Ya podés descargarlo o enviarlo por correo.', 'ok');
+    $('btn-word').disabled = false;
+    $('btn-pdf').disabled = false;
+    $('btn-mail').disabled = false;
+    document.getElementById('documento').scrollIntoView({behavior:'smooth', block:'start'});
+  });
+
+  $('btn-word').addEventListener('click', () => {
+    const contenido = document.getElementById('documento').outerHTML;
+    const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head><meta charset="utf-8">
+<style>
+  @page Section1{size:21cm 29.7cm;margin:1.1cm 1.4cm 1.1cm 1.4cm;mso-header-margin:.4cm;mso-footer-margin:.4cm;mso-paper-source:0;}
+  div.Section1{page:Section1;}
+  body{font-family:"Segoe UI",Arial,sans-serif;font-size:9.5pt;color:#111;mso-line-height-rule:exactly;}
+  p{margin:0;}
+  table{border-collapse:collapse;}
+  table.doc2-header td{border:none;padding:0;vertical-align:top;}
+  .doc2-logo{font-size:18pt;font-weight:bold;color:#0d3b66;width:50%;}
+  .doc2-logo .e{color:#22b2e0;}
+  .doc2-meta{text-align:right;font-size:8pt;color:#555;width:50%;line-height:1.3;}
+  .doc2-meta .l1{font-size:9pt;color:#333;}
+  .doc2-rule{border:none;border-top:2.5pt solid #092a4a;margin:6px 0 10px;height:0;}
+  .doc2-title{text-align:center;font-size:12.5pt;font-weight:bold;text-transform:uppercase;margin:0 0 2px;}
+  .doc2-subtitle{text-align:center;font-size:8.5pt;color:#666;margin:0 0 10px;}
+  table.doc2-table{width:100%;font-size:9pt;margin-bottom:12px;}
+  table.doc2-table td{border:1px solid #999;padding:3px 7px;vertical-align:top;line-height:1.25;}
+  table.doc2-table td.label{background:#eef2f6;font-weight:bold;color:#334;width:38%;font-size:8pt;text-transform:uppercase;}
+  table.doc2-table td.value.vacio{color:#888;}
+  table.doc2-firmas{width:100%;margin-top:16px;}
+  table.doc2-firmas td{width:33%;text-align:center;padding-top:3px;font-size:8pt;border:none;border-top:1px solid #333;}
+</style>
+</head>
+<body><div class="Section1">${contenido}</div></body></html>`;
+    const blob = new Blob(['﻿', html], { type: 'application/msword' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = nombreArchivo('doc');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  });
+
+  $('btn-pdf').addEventListener('click', () => {
+    setStatus('Se abrió el diálogo de impresión: elegí "Guardar como PDF" y confirmá el destino.', 'ok');
+    window.print();
+  });
+
+  $('btn-mail').addEventListener('click', () => {
+    const tipo = tipoOperacion();
+    const desc = $('descripcion').value.trim();
+    const subject = encodeURIComponent(`${tipo} AF - ${desc}`);
+
+    let cuerpo;
+    if (tipo === 'BAJA'){
+      cuerpo = [
+        'Informe de Baja de Activo Fijo (Anexo III)',
+        '',
+        `N° de Activo Fijo: ${$('numaf-baja').value.trim()}`,
+        `Grupo de Activo Fijo: ${$('grupo').value || '-'}`,
+        `Descripción del Activo: ${desc}`,
+        `Motivo de la baja: ${$('motivo-baja').value.trim()}`,
+        `Fecha real de la baja: ${dateFmt($('fecha-baja').value)}`,
+        `Posibilidad de reventa: ${$('reventa').value || '-'}`,
+        `Observaciones: ${$('observaciones').value.trim() || '-'}`,
+        '',
+        `Solicitante / Responsable: ${$('solicitante').value}`,
+        `Fecha de solicitud: ${dateFmt($('fecha-solicitud').value)}`,
+        '',
+        'Se adjunta el Informe de Baja (Anexo III) en Word/PDF.'
+      ].join('\n');
+    } else {
+      cuerpo = [
+        `Formulario ${tipo} de Solicitud de Compra de Activo Fijo (Anexo I)`,
+        '',
+        `Grupo de Activo Fijo: ${$('grupo').value}`,
+        `Descripción del Activo: ${desc}`,
+        `Valor estimado: ${currencyFmt($('valor').value, $('moneda').value)}`,
+        `Grado de necesidad: ${$('grado').value}`,
+        `Motivo de la compra: ${$('motivo').value}`,
+        `CeCo: ${$('ceco').value}`,
+        `Fecha estimada de puesta en servicio: ${dateFmt($('fecha-puesta').value)}`,
+        `Responsable de comunicar la puesta en servicio real: ${$('responsable').value}`,
+        `Cobertura de riesgo: ${$('cobertura').value.trim() || 'No aplica'}`,
+        `Observaciones: ${$('observaciones').value.trim() || '-'}`,
+        '',
+        `Solicitante: ${$('solicitante').value}`,
+        `Fecha de solicitud: ${dateFmt($('fecha-solicitud').value)}`,
+        `N° de SP: ${$('numsp').value.trim() || '-'}`,
+        '',
+        'Se adjunta el formulario Anexo I en Word/PDF.'
+      ].join('\n');
+    }
+    const body = encodeURIComponent(cuerpo);
+    window.location.href = `mailto:${MAIL_TO.join(',')}?subject=${subject}&body=${body}`;
+  });
+
+})();
+</script>
+</body>
+</html>
