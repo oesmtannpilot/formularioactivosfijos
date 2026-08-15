@@ -409,20 +409,6 @@
             <input type="date" id="fecha-solicitud">
           </div>
 
-          <div class="field" id="f-numsp" data-ops="ALTA MEJORA">
-            <label for="numsp">N° de Solicitud de Compra (SP)
-              <span class="hint">Para la correcta imputación contable.</span>
-            </label>
-            <input type="text" id="numsp" placeholder="Ej.: SP-2026-000123">
-          </div>
-
-          <div class="field" id="f-numaf" data-ops="ALTA MEJORA">
-            <label for="numaf">N° de Activo Fijo
-              <span class="hint">Lo asigna Contabilidad al recibir el formulario — completar cuando se informe.</span>
-            </label>
-            <input type="text" id="numaf" placeholder="A completar por Contabilidad">
-          </div>
-
         </fieldset>
 
         <div class="actions">
@@ -454,7 +440,7 @@
 
           <table class="doc2-table">
             <tr data-ops="ALTA MEJORA BAJA"><td class="label">Tipo de solicitud</td><td class="value vacio" id="doc-tipo">—</td></tr>
-            <tr data-ops="ALTA MEJORA BAJA"><td class="label">Número de AF</td><td class="value vacio" id="doc-numaf">—</td></tr>
+            <tr data-ops="BAJA"><td class="label">Número de AF</td><td class="value vacio" id="doc-numaf">—</td></tr>
             <tr data-ops="ALTA MEJORA BAJA"><td class="label">Grupo de Activo Fijo</td><td class="value vacio" id="doc-grupo">—</td></tr>
             <tr data-ops="ALTA MEJORA BAJA"><td class="label">Descripción del bien</td><td class="value vacio" id="doc-descripcion">—</td></tr>
             <tr data-ops="ALTA MEJORA"><td class="label">Valor estimado</td><td class="value vacio" id="doc-valor">—</td></tr>
@@ -471,17 +457,9 @@
             <tr data-ops="ALTA MEJORA BAJA"><td class="label">Observaciones</td><td class="value vacio" id="doc-observaciones">—</td></tr>
             <tr data-ops="ALTA MEJORA"><td class="label">Vida útil estimada (manual 4.4)</td><td class="value vacio" id="doc-vida-util">—</td></tr>
             <tr data-ops="ALTA MEJORA BAJA"><td class="label" id="doc-label-solicitante">Creador de la SP</td><td class="value vacio" id="doc-solicitante">—</td></tr>
-            <tr data-ops="ALTA MEJORA"><td class="label">N° de SP</td><td class="value vacio" id="doc-numsp">—</td></tr>
             <tr data-ops="ALTA MEJORA BAJA"><td class="label">Fecha de solicitud</td><td class="value vacio" id="doc-fecha-solicitud">—</td></tr>
           </table>
 
-          <table class="doc2-firmas">
-            <tr>
-              <td id="doc-firma-1">Creador de la SP</td>
-              <td>Jefe de Operaciones</td>
-              <td>Contabilidad</td>
-            </tr>
-          </table>
         </div>
       </div>
     </div>
@@ -527,7 +505,6 @@
     const esBaja = op === 'BAJA';
     $('doc-titulo-principal').textContent = TITULOS[op];
     $('doc-meta-anexo').textContent = META_ANEXO[op];
-    $('doc-firma-1').textContent = esBaja ? 'Responsable de la baja' : 'Creador de la SP';
     $('doc-label-solicitante').textContent = esBaja ? 'Solicitante / Responsable' : 'Creador de la SP';
   }
 
@@ -584,7 +561,7 @@
     const nota = $('nota-autorizacion');
     if (!nota) return;
     if (tipoOperacion() !== 'BAJA' && requiereAutorizacion()){
-      nota.textContent = '⚠ Supera ' + umbralTexto() + ': requiere autorización previa antes de la compra.';
+      nota.textContent = '⚠ Supera ' + umbralTexto() + ': esta solicitud debe enviarse al Gerente de Operaciones para que valide la compra.';
       nota.classList.add('show');
     } else {
       nota.classList.remove('show');
@@ -703,8 +680,8 @@
     } else {
       setCampo('doc-valor', currencyFmt($('valor').value, $('moneda').value));
       setCampo('doc-autorizacion', requiereAutorizacion()
-        ? 'Requiere autorización previa (supera ' + umbralTexto() + ')'
-        : 'No requiere autorización previa');
+        ? 'Debe validar el Gerente de Operaciones (supera ' + umbralTexto() + ')'
+        : 'No requiere validación adicional');
       setCampo('doc-grado', $('grado').value.trim());
       setCampo('doc-motivo', $('motivo').value.trim());
       setCampo('doc-ceco', $('ceco').value.trim());
@@ -712,8 +689,6 @@
       setCampo('doc-responsable', $('responsable').value.trim());
       setCampo('doc-cobertura', $('cobertura').value.trim() || 'No aplica');
       setCampo('doc-vida-util', vidaUtilTexto());
-      setCampo('doc-numsp', $('numsp').value.trim());
-      setCampo('doc-numaf', $('numaf').value.trim() || 'Pendiente de asignación');
     }
   }
 
@@ -833,9 +808,8 @@
         '',
         `Solicitante: ${$('solicitante').value}`,
         `Fecha de solicitud: ${dateFmt($('fecha-solicitud').value)}`,
-        `N° de SP: ${$('numsp').value.trim() || '-'}`,
         '',
-        'Se adjunta el formulario Anexo I en Word/PDF.'
+        'Se adjunta el formulario en Word/PDF.'
       ].join('\n');
     }
     const body = encodeURIComponent(cuerpo);
